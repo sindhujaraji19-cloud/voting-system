@@ -135,86 +135,54 @@ Output
 winner_idx → Candidate with the highest votes
 count_display → Visual output of each candidate’s vote count
 ## verilog code 
-
-
-`timescale 1ns/1ps
-
-module voting_machine #(
-    parameter N_CAND = 4,
-    parameter COUNT_WIDTH = 8
-)(
-    input  wire clk,
-    input  wire rst_n,
-    input  wire start,
-    input  wire stop,
-    input  wire [N_CAND-1:0] vote_btn,
-
-    output reg [$clog2(N_CAND)-1:0] winner,
-
-    output reg [COUNT_WIDTH-1:0] vote_count0,
-    output reg [COUNT_WIDTH-1:0] vote_count1,
-    output reg [COUNT_WIDTH-1:0] vote_count2,
-    output reg [COUNT_WIDTH-1:0] vote_count3
+module voting_machine (
+    input clk, reset, vote1, vote2, vote3, end_vote,
+    output reg [3:0] count1, count2, count3,
+    output reg [1:0] winner
 );
 
-    reg voting_en;
+    // State encoding
+    localparam IDLE = 2'b00, VOTING = 2'b01, RESULT = 2'b10;
+    reg [1:0] state;
 
-    // -----------------------------
-    // Winner logic temp variables
-    // -----------------------------
-    reg [COUNT_WIDTH-1:0] max_value;
-    reg [1:0] max_idx;
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            count1 <= 0; count2 <= 0; count3 <= 0;
+            winner <= 0; 
+            state <= IDLE;
+        end else begin
+            case (state)
+                IDLE: begin
+                    if (!end_vote)
+                        state <= VOTING;
+                end
 
-    // Voting enable logic
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n)
-            voting_en <= 0;
-        else if (start)
-            voting_en <= 1;
-        else if (stop)
-            voting_en <= 0;
+                VOTING: begin
+                    if (vote1) count1 <= count1 + 1;
+                    else if (vote2) count2 <= count2 + 1;
+                    else if (vote3) count3 <= count3 + 1;
+
+                    if (end_vote) state <= RESULT;
+                end
+
+                RESULT: begin
+                    if (count1 > count2 && count1 > count3) winner <= 1;
+                    else if (count2 > count1 && count2 > count3) winner <= 2;
+                    else if (count3 > count1 && count3 > count2) winner <= 3;
+                    else winner <= 0; // tie case
+                end
+            endcase
+        end
     end
-
-    // Vote counters
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            vote_count0 <= 0;
-            vote_count1 <= 0;
-            vote_count2 <= 0;
-            vote_count3 <= 0;
-        end
-        else if (voting_en) begin
-            if (vote_btn[0]) vote_count0 <= vote_count0 + 1;
-            if (vote_btn[1]) vote_count1 <= vote_count1 + 1;
-            if (vote_btn[2]) vote_count2 <= vote_count2 + 1;
-            if (vote_btn[3]) vote_count3 <= vote_count3 + 1;
-        end
-    end
-
-    // Winner logic
-    always @(*) begin
-        max_value = vote_count0;
-        max_idx   = 0;
-
-        if (vote_count1 > max_value) begin
-            max_value = vote_count1;
-            max_idx = 1;
-        end
-
-        if (vote_count2 > max_value) begin
-            max_value = vote_count2;
-            max_idx = 2;
-        end
-
-        if (vote_count3 > max_value) begin
-            max_value = vote_count3;
-            max_idx = 3;
-        end
-
-        winner = max_idx;
-    end
-
 endmodule
+
+
+
+
+
+
+
+  
 
 ## test bench 
 
