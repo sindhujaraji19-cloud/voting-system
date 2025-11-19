@@ -1,6 +1,6 @@
 # voting machine
 
-## real-World Context for Voting Machine
+## real-World Context for Voting Machine 
 
 Electronic Voting Machines (EVMs) play a crucial role in modern democratic systems by ensuring fair, accurate, and transparent elections. Traditional paper-based voting methods often suffer from challenges such as manual counting errors, time delays, ballot tampering, and high operational costs. With increasing population and large-scale elections, it becomes essential to adopt systems that are fast, reliable, and less prone to human error.
 
