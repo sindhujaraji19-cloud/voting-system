@@ -135,7 +135,7 @@ Output
 winner_idx → Candidate with the highest votes
 count_display → Visual output of each candidate’s vote count
 ## verilog code 
-`timescale 1ns/1ps
+
 
 `timescale 1ns/1ps
 
